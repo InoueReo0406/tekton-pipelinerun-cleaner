@@ -23,5 +23,13 @@ pipelinerun-cleaner-cronjob   0 0 * * *   False     0        <none>          15s
 $ helm uninstall pipelinerun-cleaner-v1
 ```
 
+# Test environment
+This software was tested in the following environments.
+
+- Ubuntu20.04.1
+- Kubernetes 1.25.5.
+- CRI-O 1.25.2
+- Tekton Pipeline 0.53.3
+
 # License
 Apache License, Version 2.0
