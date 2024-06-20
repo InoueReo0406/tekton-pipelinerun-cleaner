@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.global.cronjob.name }}
+  labels:
+    app: {{ .Values.global.label.name }}
+spec:
+  schedule: {{ .Values.global.cronjob.schedule | quote }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: {{ .Values.global.cronjob.ttl }} #second
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccount: {{ .Values.global.sa.name }}
+          containers:
+            - name: kubectl
+              image: {{ .Values.global.image.name }}:{{ .Values.global.image.tag }}
+              env:
+                - name: NUM_TO_KEEP
+                  value: "3"
+              command:
+                - /bin/bash
+                - -c
+                - >
+                  echo "start cronjob";
+                  PIPELINE_TMP=$(kubectl get pipelinerun -o jsonpath='{range .items[*]}{.metadata.labels.tekton\.dev/pipeline}{"\n"}{end}' | uniq);
+                  for PIPELINE in $PIPELINE_TMP; do
+                    echo "1";
+                    PIPELINE_TO_REMOVE_TMP=$(kubectl get pipelinerun -l tekton.dev/pipeline=${PIPELINE} --sort-by=.metadata.creationTimestamp -o name);
+                    echo "2";
+                    for PIPELINE_TO_REMOVE in $PIPELINE_TO_REMOVE_TMP; do
+                      echo "3";
+                      test -n "${PIPELINE_TO_REMOVE}" || continue;
+                      kubectl delete ${PIPELINE_TO_REMOVE} \
+                          && echo "$(date -Is) PipelineRun ${PIPELINE_TO_REMOVE} deleted." \
+                          || echo "$(date -Is) Unable to delete PipelineRun ${PIPELINE_TO_REMOVE}.";
+                    done
+                  done

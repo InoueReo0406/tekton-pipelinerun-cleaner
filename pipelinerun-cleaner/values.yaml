@@ -1,0 +1,20 @@
+# Default values for pipelinerun-cleaner.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  image:
+    name: "docker.io/alpine/k8s"
+    tag: "1.28.3"
+  label:
+   name: "pipelinerun-cleaner"
+  sa:
+    name: "pipelinerun-cleaner-sa"
+  role:
+    name: "pipelinerun-cleaner-role"
+  rolebinding:
+    name: "pipelinerun-cleaner-rolebinding"
+  cronjob:
+    name: "pipelinerun-cleaner-cronjob"
+    schedule: "0 0 * * *"
+    ttl: 3600 #second
